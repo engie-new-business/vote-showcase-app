@@ -1,4 +1,7 @@
 # Vote showcase
+This demo application shows how to create a DApp that allows gaseless transactions with Metamask thanks to Rockside API.
+
+*The use of Metamask is not a prerequisite, other solutions to sign the meta-tx can be implemented. Do not hesitate to [create issues](https://github.com/rocksideio/vote-showcase-app/issues/new) to request other examples of integrations for your use case.*
 
 ### How does it work ?
 
