@@ -88,7 +88,6 @@ export default class Voteapi extends Vue {
       const data = '0x' + encodedValue.toString('hex');
       const { nonce } = await this.backend.getRelayParams(this.account);
       const chainId = await this.web3.eth.net.getId();
-      const gasPrice = await this.web3.eth.getGasPrice();
       const domain = { chainId, verifyingContract: this.contractAddress };
       const destination =  '0x0000000000000000000000000000000000000000';
       const metatx = {
@@ -119,7 +118,6 @@ export default class Voteapi extends Vue {
         data,
         nonce,
         signature,
-        gasPrice,
       });
     }
 }

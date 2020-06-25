@@ -24,7 +24,7 @@ async function voteParams(req, res) {
   };
 
   const response = await request({
-    uri: `${rocksideURL}/ethereum/${network}/${forwarderAddress}/relayParams?apikey=${apikey}`,
+    uri: `${rocksideURL}/ethereum/${network}/forwarders/${forwarderAddress}/relayParams?apikey=${apikey}`,
     method: 'POST',
     body: requestBody,
     json: true,
@@ -45,8 +45,26 @@ async function getRocksideTx(req, res) {
   res.json(response)
 }
 
+async function fetchGasPrice(signer) {
+  const requestBody = {
+    account: signer,
+    channel_id: '0',
+  };
+
+  const response = await request({
+    uri: `${rocksideURL}/ethereum/${network}/forwarders/${forwarderAddress}/relayParams?apikey=${apikey}`,
+    method: 'POST',
+    body: requestBody,
+    json: true,
+  })
+
+  return response.gas_prices;
+}
+
 async function vote(req, res) {
   const body = req.body;
+
+  const gasPrice = await fetchGasPrice(body.signer);
 
   const requestBody = {
     destination_contract: contractAddress,
@@ -58,7 +76,7 @@ async function vote(req, res) {
     },
     signature: body.signature,
     speed: 'fast',
-    gas_price_limit: body.gasPrice,
+    gas_price_limit: gasPrice.fast,
   };
 
   const response = await request({

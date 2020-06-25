@@ -14,7 +14,7 @@ import Web3 from 'web3';
 
 export default class Metamask extends Vue {
     private hasMetamask: boolean = false;
-    private deploying: boolean = false;
+    private isRopsten: boolean = false;
 
     private account: string = '';
 
@@ -40,5 +40,7 @@ export default class Metamask extends Vue {
 
         this.account = accounts[0];
         this.web3 = new Web3(ethereum);
+
+        this.isRopsten = (await this.web3.eth.net.getId()) === 3;
     }
 }

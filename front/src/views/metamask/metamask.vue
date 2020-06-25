@@ -10,12 +10,6 @@
                 <div>Address: {{account}}</div>
             </div>
 
-            <div v-if="deploying" class="w-full">
-                <div class="loader">
-                    Loading...
-                </div>
-            </div>
-
 	    <div v-if="!web3" class="card mb-5 xl:mb-10">
 		    <h2 class="font-bold tracking-wide text-2xl mt-0 mb-6 text-primary block">
 			    Please install Metamask
@@ -24,8 +18,17 @@
 		    Please install Metamask to try this application. Metamask can be found <a class="text-primary" href="https://metamask.io/">here</a>
 	    </div>
 
+	    <div v-if="!isRopsten" class="card mb-5 xl:mb-10">
+		    <h2 class="font-bold tracking-wide text-2xl mt-0 mb-6 text-primary block">
+			    Please switch to Ropsten
+		    </h2>
+
+		    Please change your network to Ropsten to try the application
+	    </div>
+
+
             <Vote
-		    v-if="account && web3"
+		    v-if="account && web3 && isRopsten"
 		    class="z-20 mb-5 xl:mb-10"
 		    v-bind:account="account"
 		    v-bind:web3="web3"
