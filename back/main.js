@@ -9,7 +9,7 @@ const apikey = process.env.APIKEY
 const rocksideURL = process.env.APIURL || 'https://api.rockside.io'
 
 const forwarderAddress = process.env.FORWARDER_CONTRACT || '0xB87178115C7fd4C5B8b38Adf50e372CdC3b3db4D';
-const contractAddress = process.env.VOTE_CONTRACT || '0xbad98ec8bfecf426145b023e8a30bdaf149cc078'
+const contractAddress = process.env.VOTE_CONTRACT || '0x45fdd93c3d3b3a1c7ce5000ab5ba1a3073225b91'
 
 async function setup(req,res) {
   res.json({

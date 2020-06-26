@@ -84,8 +84,12 @@ export default class Voteapi extends Vue {
     }
 
     public async _voteMetaTX(value: boolean): Promise<string> {
+      /*
       const encodedValue = rawEncode([ 'bool' ], [ value ]);
       const data = '0x' + encodedValue.toString('hex');
+      */
+      const data = await this.contract.methods.vote(value).encodeABI();
+      console.log(data);
       const { nonce } = await this.backend.getRelayParams(this.account);
       const chainId = await this.web3.eth.net.getId();
       const domain = { chainId, verifyingContract: this.contractAddress };
