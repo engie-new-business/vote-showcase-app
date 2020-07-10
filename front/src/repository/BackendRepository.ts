@@ -24,15 +24,6 @@ export default class BackendRepository {
       return trackingId;
     }
 
-    public async getRelayParams(account: string): Promise<{ nonce: string }> {
-      const response = await this.client.post('/voteParams', {
-        account,
-      });
-
-      const { nonce } = response.data;
-      return { nonce };
-    }
-
     public async getReceipt(trackingId: string): Promise<any> {
       const response = await this.client.get(`/tx/${trackingId}`);
 

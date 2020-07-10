@@ -3,13 +3,17 @@ let request = require('request-promise');
 let bodyParser = require('body-parser');
 let cors = require('cors')
 let Web3 = require('web3')
+const { TypedDataUtils } = require('eth-sig-util');
+const { keccak256 } = require('ethereumjs-util');
 
 const network = 'ropsten'
+const chainId = 3
 const apikey = process.env.APIKEY
 const rocksideURL = process.env.APIURL || 'https://api.rockside.io'
 
-const forwarderAddress = process.env.FORWARDER_CONTRACT || '0xB87178115C7fd4C5B8b38Adf50e372CdC3b3db4D';
-const contractAddress = process.env.VOTE_CONTRACT || '0x45fdd93c3d3b3a1c7ce5000ab5ba1a3073225b91'
+const forwarderAddress = process.env.FORWARDER_CONTRACT || '0x79043BeB5C751afD1Ae40dA4399a463cF4D10Ebb';
+const contractAddress = process.env.VOTE_CONTRACT || '0x49a1f9ab6095a01107b3ecfd6a3921d99150d5d4';
+const relayerEOAAddress = process.env.RELAYER_EOA || '0x30d2589f86d81b4a77d221de799a3d06645b4c70';
 
 async function setup(req,res) {
   res.json({
@@ -17,11 +21,8 @@ async function setup(req,res) {
   })
 }
 
-async function voteParams(req, res) {
-  const requestBody = {
-    account: req.body.account,
-    channel_id: '0',
-  };
+async function fetchRelayParams(account) {
+  const requestBody = { account, channel_id: '0' };
 
   const response = await request({
     uri: `${rocksideURL}/ethereum/${network}/forwarders/${forwarderAddress}/relayParams?apikey=${apikey}`,
@@ -30,9 +31,51 @@ async function voteParams(req, res) {
     json: true,
   })
 
-  res.json({
-    nonce: response.nonce,
-  })
+  return response;
+}
+
+function hashRelayMessage({ signer, to, data, nonce }) {
+  const domain = { verifyingContract: forwarderAddress, chainId };
+
+  const eip712DomainType = [
+    { name: 'verifyingContract', type: 'address' },
+    { name: 'chainId', type: 'uint256' }
+  ];
+  const encodedDomain = TypedDataUtils.encodeData(
+    'EIP712Domain',
+    domain,
+    { EIP712Domain: eip712DomainType }
+  );
+  const hashedDomain = keccak256(encodedDomain);
+
+  const messageTypes = {
+    'TxMessage': [
+      { name: "signer", type: "address" },
+      { name: "to", type: "address" },
+      { name: "data", type: "bytes" },
+      { name: "nonce", type: "uint256" },
+    ]
+  };
+
+  const encodedMessage = TypedDataUtils.encodeData(
+    'TxMessage',
+    {
+      signer,
+      to, data,
+      nonce
+    },
+    messageTypes,
+  );
+
+  const hashedMessage = keccak256(encodedMessage);
+
+  return keccak256(
+    Buffer.concat([
+      Buffer.from('1901', 'hex'),
+      hashedDomain,
+      hashedMessage,
+    ])
+  );
 }
 
 async function getRocksideTx(req, res) {
@@ -45,36 +88,39 @@ async function getRocksideTx(req, res) {
   res.json(response)
 }
 
-async function fetchGasPrice(signer) {
-  const requestBody = {
-    account: signer,
-    channel_id: '0',
-  };
+async function signRocksideEOA(signer, message) {
+  const body = { message };
 
   const response = await request({
-    uri: `${rocksideURL}/ethereum/${network}/forwarders/${forwarderAddress}/relayParams?apikey=${apikey}`,
+    uri: `${rocksideURL}/ethereum/eoa/${signer}/sign-message?apikey=${apikey}`,
     method: 'POST',
-    body: requestBody,
     json: true,
+    body,
   })
 
-  return response.gas_prices;
+  return response.signed_message;
 }
+
 
 async function vote(req, res) {
   const body = req.body;
 
-  const gasPrice = await fetchGasPrice(body.signer);
+  const to = contractAddress;
+  const signer = relayerEOAAddress;
+  const { data } = body;
+  const { nonce, gas_prices: gasPrice } = await fetchRelayParams(relayerEOAAddress);
+
+  const hash = hashRelayMessage({ signer, to, data, nonce });
+  const signature = await signRocksideEOA(signer, '0x' + hash.toString('hex'));
 
   const requestBody = {
-    destination_contract: contractAddress,
-    data: {
-      signer: body.signer,
-      to: body.to,
+    message: {
+      signer,
+      to,
       data: body.data,
-      nonce: body.nonce,
+      nonce 
     },
-    signature: body.signature,
+    signature,
     speed: 'fast',
     gas_price_limit: gasPrice.fast,
   };
@@ -107,7 +153,6 @@ app.use(bodyParser.json())
 app.use(cors())
 
 app.get('/setup', wrap(setup))
-app.post('/voteParams', wrap(voteParams))
 app.get('/tx/:trackingId', wrap(getRocksideTx))
 app.post('/vote', wrap(vote))
 

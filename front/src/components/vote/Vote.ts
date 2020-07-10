@@ -1,5 +1,5 @@
 import { Component, Vue, Prop } from 'vue-property-decorator';
-import { VoteABI, ForwarderABI } from '@/contract';
+import { VoteABI } from '@/contract';
 import config from '@/config';
 import Web3 from 'web3';
 import BackendRepository from '@/repository/BackendRepository';
@@ -84,25 +84,30 @@ export default class Voteapi extends Vue {
     }
 
     public async _voteMetaTX(value: boolean): Promise<string> {
-      /*
-      const encodedValue = rawEncode([ 'bool' ], [ value ]);
-      const data = '0x' + encodedValue.toString('hex');
-      */
-      const data = await this.contract.methods.vote(value).encodeABI();
-      console.log(data);
-      const { nonce } = await this.backend.getRelayParams(this.account);
       const chainId = await this.web3.eth.net.getId();
       const domain = { chainId, verifyingContract: this.contractAddress };
       const destination =  '0x0000000000000000000000000000000000000000';
-      const metatx = {
+      const message = {
         signer: this.account,
-        to: destination, // not used by the Vote smart contract
-        value: 0, // not used by the Vote smart contract
-        data,
-        nonce,
+        vote: Number(value),
       };
 
-      const typedData = rocksideSdk.executeMessageTypedData(domain, metatx);
+      const typedData = {
+        types: {
+          EIP712Domain: [
+            { name: 'verifyingContract', type: 'address' },
+            { name: 'chainId', type: 'uint256' },
+          ],
+          Vote: [
+            { name: 'signer', type: 'address' },
+            { name: 'vote', type: 'uint256' },
+          ],
+        },
+        domain,
+        primaryType: 'Vote',
+        message,
+      };
+
 
       const signature: string = await new Promise((resolve, reject) => {
         (this.web3 as any).currentProvider.send({
@@ -115,13 +120,11 @@ export default class Voteapi extends Vue {
         });
       });
 
+
+      const data = await this.contract.methods.voteWithSignature(this.account, value, signature).encodeABI();
+
       return await this.backend.vote({
-        signer: this.account,
-        to: destination,
-        value: 0,
         data,
-        nonce,
-        signature,
       });
     }
 }
