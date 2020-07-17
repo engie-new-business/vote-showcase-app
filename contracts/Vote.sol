@@ -4,7 +4,7 @@ contract Vote {
     uint public yes;
     uint public no;
 
-    constructor(address _forwarder) public {
+    constructor() public {
         yes = 0;
         no = 0;
 
