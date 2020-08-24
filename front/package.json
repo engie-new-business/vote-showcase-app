@@ -11,7 +11,7 @@
     "@rocksideio/rockside-wallet-sdk": "0.3.6",
     "@walletconnect/browser": "^1.0.0-beta.46",
     "@walletconnect/qrcode-modal": "^1.0.0-beta.46",
-    "@walletconnect/web3-provider": "^1.0.0-beta.46",
+    "@walletconnect/web3-provider": "^1.2.1",
     "core-js": "^2.6.5",
     "ethereumjs-abi": "^0.6.8",
     "ethereumjs-util": "^6.2.0",

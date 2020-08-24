@@ -48,6 +48,12 @@ export default class Metamask extends Vue {
             key: 'pk_test_813022A1288975BC', // required
           },
         },
+        walletconnect: {
+          package: WalletConnectProvider,
+          options: {
+            infuraId: '2e297f45a4fd4a84b371c9fe432e2e6f',
+          },
+        },
       };
 
 
