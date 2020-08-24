@@ -2,7 +2,7 @@
 <div>
     <div class="flex flex-wrap items-start">
         <div class="flex flex-wrap items-baseline w-full xl:w-2/3 xxl:w-1/2 p-5 pb-0 xl:p-10 xl:pr-5">
-            <div v-if="account" class="card z-20 mb-5 xl:mb-10">
+            <div v-if="account" class="card mb-5 xl:mb-10">
                 <h2 class="font-bold tracking-wide text-2xl mt-0 mb-4 text-primary inline-block">
                     Your signing account
                 </h2>
@@ -10,15 +10,7 @@
                 <div>Address: {{account}}</div>
             </div>
 
-	    <div v-if="!web3" class="card mb-5 xl:mb-10">
-		    <h2 class="font-bold tracking-wide text-2xl mt-0 mb-6 text-primary block">
-			    Please install Metamask
-		    </h2>
-
-		    Please install Metamask to try this application. Metamask can be found <a class="text-primary" href="https://metamask.io/">here</a>
-	    </div>
-
-	    <div v-if="!isRopsten" class="card mb-5 xl:mb-10">
+	    <div v-if="!!web3 && !isRopsten" class="card mb-5 xl:mb-10">
 		    <h2 class="font-bold tracking-wide text-2xl mt-0 mb-6 text-primary block">
 			    Please switch to Ropsten
 		    </h2>
@@ -26,10 +18,9 @@
 		    Please change your network to Ropsten to try the application
 	    </div>
 
-
             <Vote
 		    v-if="account && web3 && isRopsten"
-		    class="z-20 mb-5 xl:mb-10"
+		    class="mb-5 xl:mb-10"
 		    v-bind:account="account"
 		    v-bind:web3="web3"
 		    v-bind:contractAddress="voteContract"
@@ -38,7 +29,7 @@
         </div>
 
         <div class="flex flex-wrap items-center w-full xl:w-1/3 xxl:w-1/2 p-5 xl:p-10 xl:pl-5 xxl:flex-col">
-            <div class="card z-20 xl:max-w-lg">
+            <div class="card xl:max-w-lg">
                 <h2 class="font-bold tracking-wide text-2xl mt-0 mb-6 text-primary inline-block ">
                     Neep help?
                 </h2>
