@@ -86,7 +86,6 @@ export default class Voteapi extends Vue {
     public async _voteMetaTX(value: boolean): Promise<string> {
       const chainId = await this.web3.eth.net.getId();
       const domain = { chainId, verifyingContract: this.contractAddress };
-      const destination =  '0x0000000000000000000000000000000000000000';
       const message = {
         signer: this.account,
         vote: Number(value),
